@@ -117,13 +117,12 @@ git add -A && git commit -m "..." && git push
       里只剩 `schedule-0b6c60ea`（hello world）和新的 `schedule-b3675d28`。无需再处理。
 - [ ] 市场条目 PR `awesome-dsh-plugin/awesome-dsh-plugin#8296` 仍是 open；合并前 `status` 会一直报
       `market listing not live yet`。找合并节奏，不要重提。
-- [ ] npm 上还挂着占位包 `0.0.0-stage`（`stub: true`）。可以考虑 `npm deprecate dsh-limit-break@0.0.0-stage "placeholder"`。
-- [ ] `1.0.0` 是无元数据的旧包体（author/repository 都不在）。可以 deprecate 掉，减少噪音。
+- [ ] npm 上还挂着占位包 `0.0.0-stage`（`stub: true`）。`npm deprecate` 也要 OTP（本轮 EOTP 失败）；
+      用户一条命令即可：`npm deprecate dsh-limit-break@0.0.0-stage "placeholder - use 1.2.0"`。
+- [ ] `1.0.0` 是无元数据的旧包体（author/repository 都不在）。同样一条 `npm deprecate` 可清掉噪音（需 OTP）。
 - [ ] `facts.json` 里 `env.gpu` 仍写着"no GPU compute benchmark was run"——已过时（GPU 实测 54.3×）。
-- [ ] 插件工具对**已经打开的会话**不可见：插件在 `19:07:45` mount 成功（4 个工具都在），
-      但那个时间点之前启动的会话，工具集里没有 `memory_*`。新会话才有。
-      值得查清：是工具清单在会话创建时快照，还是 hub 与 agent 进程的工具注册面不同。
-      查清后要么修（如果能在插件侧解决），要么写进 README 作为已知限制。
+- [x] 插件工具对**已经打开的会话**不可见：已在 README「Known limits」第 1 条写明
+      （tool list 是 per-session 快照，插件侧修不了）。事实 `harness.plugin-tool-visibility` 有实测。
 - [ ] `resilient_fetch` 目前按"主机名别名"降级，可以继续加：`--resolve` 到已知 IP、
       IPv6 优先、以及把成功路径写回记忆库（现在是只读阶梯）。
 - [ ] 没有任何自动化测试覆盖 `memory_save` 的并发写。单进程够用，多进程未验证。
