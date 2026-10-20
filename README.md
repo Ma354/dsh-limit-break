@@ -70,6 +70,24 @@ Writes are tmp-file + rename.
 * Cold: `dsh plugin remove dsh-limit-break`, then restart.
 * The store is not deleted by either. It lives in `$DSH_HOME/memory/` and is safe to keep.
 
+## Known limits
+
+Measured, not guessed — each line is something a session actually hit.
+
+* **Tools are visible only to sessions opened after the mount.** A session created before the
+  plugin mounted keeps its tool snapshot; new tools do not appear until a new session. Not fixable
+  from the plugin side (the tool list is materialised per session).
+* **One writer per store.** Writes are tmp-file + rename, which is crash-safe, but two processes
+  writing `facts.json` concurrently still lose one update — there is no lock. One agent per
+  machine is the intended use.
+* **The fetch ladder is hostname-level.** It does not defeat IP-level blocks, TLS interception,
+  or a proxy that terminates the connection; it does not skip certificate verification.
+* **`memory_recall` ranks by keyword overlap only** (id/topic/tags/statement), no embeddings, no
+  stemming above the tokenisation in `tokenize()`. A query that shares no token with a fact will
+  miss it.
+* **`resilient_fetch` reads at most 2 MiB per response** and returns at most 20 000 characters;
+  bigger payloads are truncated, not streamed.
+
 ## Privacy
 
 Nothing leaves the machine. `resilient_fetch` makes the request you asked for; the memory tools read
