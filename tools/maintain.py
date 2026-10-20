@@ -100,6 +100,12 @@ def cmd_status() -> int:
     if not out["in_bundles"]:
         out["problems"].append("not listed in dsh.profile.bundles -> the app will never load it")
 
+    try:
+        repo_ver = json.loads((HERE / "package.json").read_text(encoding="utf-8")).get("version")
+    except Exception:                                        # noqa: BLE001
+        repo_ver = None
+    out["repo_version"] = repo_ver
+
     code, _, reg = get_json(f"https://registry.npmjs.org/{PKG}?t={int(time.time())}")
     out["npm_http"] = code
     if reg:
@@ -108,6 +114,9 @@ def cmd_status() -> int:
         if out["npm_latest"] != out["installed_version"]:
             out["problems"].append(
                 f"drift: installed {out['installed_version']} != npm latest {out['npm_latest']}")
+        if repo_ver and repo_ver != out["npm_latest"]:
+            out["problems"].append(
+                f"release pending: repo at {repo_ver}, npm latest {out['npm_latest']} (needs npm publish)")
     else:
         out["problems"].append(f"npm registry unreachable ({code})")
 

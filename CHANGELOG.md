@@ -5,10 +5,14 @@ All notable changes to `dsh-limit-break`. Format follows
 
 ## Unreleased
 
+## 1.1.0 — 2026-10-20
+
 ### Added
 - `MAINTAIN.md` — the maintenance runbook (probe → break → evolve → publish → record).
+- `CHANGELOG.md` — this file.
 - `tools/maintain.py` — three verbs: `status` (npm / GitHub / listing / drift),
   `probe` (environment baseline with diff-against-previous), `verify` (contract test).
+  Shipped in the tarball so the loop is reproducible on any machine, not just this one.
 
 ## 1.0.2 — 2026-10-20
 
