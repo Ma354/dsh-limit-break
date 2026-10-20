@@ -110,6 +110,14 @@ git add -A && git commit -m "..." && git push
 
 ## Backlog（按 2026-10-20 结束时的真实状态）
 
+- [ ] **1.2.0 待上线**：commit `69b726f` 只在本地。`git push origin main` 连续 3 次失败
+      （github.com:443 连接重置 / 连不上；api.github.com 仍 200，所以是 SNI 级封锁）。
+      `npm publish` 需要用户的 OTP，本轮未执行。恢复网络后跑：
+      `git push origin main && npm publish`（仓库与 `profiles/desktop/node_modules/dsh-limit-break`
+      两份副本已同步且 `verify` PASS）。
+- [ ] 旧定时任务 `schedule-803cdbdc`（会话 5133bee1）跨会话删不掉（`schedule_not_found`），
+      已从 `storages/schedule.json` 摘行；运行中的 hub 会从内存回写，**重启后才彻底消失**，
+      或由用户在 5133bee1 的定时任务面板手动删。INDEX.md 里留了自删提示。
 - [ ] 市场条目 PR `awesome-dsh-plugin/awesome-dsh-plugin#8296` 仍是 open；合并前 `status` 会一直报
       `market listing not live yet`。找合并节奏，不要重提。
 - [ ] npm 上还挂着占位包 `0.0.0-stage`（`stub: true`）。可以考虑 `npm deprecate dsh-limit-break@0.0.0-stage "placeholder"`。
