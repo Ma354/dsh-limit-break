@@ -1,6 +1,6 @@
 {
   "name": "dsh-limit-break",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Durable cross-session memory and a fetch ladder that survives hostname-keyed blocking — four small tools for DeepSeek Harness.",
   "type": "module",
   "main": "lib/index.js",

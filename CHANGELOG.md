@@ -5,6 +5,19 @@ All notable changes to `dsh-limit-break`. Format follows
 
 ## Unreleased
 
+## 1.2.1 — 2026-10-21
+
+### Fixed
+- **The log could not tell you which copy was live.** `User-Agent` and every
+  `plugin-load.log` record now carry the version read from the installed `package.json`
+  instead of a hard-coded string, and mount records add `moduleDir`. A rolled-back or
+  hand-copied install is now visible in one line instead of a guess.
+- **A doubly-activated plugin looked like a broken switch.** When a profile patch keeps a
+  second `insert` row for the same id, the loader mounts the plugin twice, the bundle switch
+  has nothing left to turn off, and the row switch is locked as *unaddressable*. Mounts are
+  now counted per store and a second live mount writes a `duplicate-apply` record with a
+  hint, so the misconfiguration is diagnosable from the log instead of from the symptom.
+
 ## 1.2.0 — 2026-10-20
 
 ### Fixed
