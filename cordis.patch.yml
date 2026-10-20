@@ -1,0 +1,13 @@
+# dsh-limit-break — bundle patch
+#
+# Mounted automatically when the package is installed with `dsh plugin add dsh-limit-break`.
+# Four tools, no daemon, no network at import time:
+#   memory_recall / memory_save  — a JSON fact store at $DSH_HOME/memory/facts.json
+#   resilient_fetch              — fetch, then IPv6, then IPv4, then a same-service alias host
+#   memory_stats                 — where the store is and how much is in it
+- insert:
+    - id: limit-break
+      name: dsh-limit-break
+      config:
+        requestTimeoutMs: 12000
+        shellFallback: true
