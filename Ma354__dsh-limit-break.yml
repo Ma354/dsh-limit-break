@@ -1,6 +1,0 @@
-url: https://github.com/YOUR-GITHUB-USER/dsh-limit-break
-name: YOUR-GITHUB-USER/dsh-limit-break
-category: memory
-description:
-  en: 'Durable cross-session memory plus a fetch ladder for hostname-keyed blocking — four tools, no daemon, plain-JSON fact store.'
-  zh: '跨会话持久记忆，加一条绕开主机名级封锁的取数阶梯：四个工具，无后台进程，记忆是纯 JSON。'
