@@ -5,6 +5,22 @@ All notable changes to `dsh-limit-break`. Format follows
 
 ## Unreleased
 
+## 1.3.0 — 2026-10-22
+
+### Added
+- **`memory_prune`: the manual cleanup, made repeatable.** The 2026-10-21 session pruned a
+  27-fact store to 17 by hand — merging benchmark facts into a suite, deleting session state,
+  dropping derivative copies. That judgment is now a tool with deterministic rules:
+  `session-state` (a fact that reads as conversational state) and `exact-duplicate` (same
+  statement; the richer fact survives). It reports a plan first, applies only with
+  `apply: true`, copies the store to `facts.json.bak-<timestamp>`, and moves removed facts to
+  `facts.archive.json`. Nothing is ever deleted. Softer suspicions — two facts citing the same
+  measurements, two facts claiming opposite things on one topic — are returned as read-only
+  warnings, since they need a human call.
+- `tools/prune-selftest.mjs` covers the dry run (must not touch the store), the apply path
+  (archive + backup), the richer-duplicate rule, and idempotence (a second run must not grow
+  the archive).
+
 ## 1.2.1 — 2026-10-21
 
 ### Fixed

@@ -14,7 +14,7 @@ cd D:/deepseek-harness/default-workspace/capability-demo/plugin/dsh-limit-break
 PY="C:/Users/lenovo/.dsh/dsh-runtimes/dsh-primary-runtime/dependencies/python/python.exe"
 $PY tools/maintain.py status      # 我发布的版本在哪、PR 合没合、装的是不是 latest
 $PY tools/maintain.py probe       # 重新测一遍环境，和上次的 baseline 做 diff
-$PY tools/maintain.py verify      # 契约测试：4 个工具是否仍然注册成功
+$PY tools/maintain.py verify      # 契约测试：5 个工具是否仍然注册成功
 ```
 
 先读 `facts.json` 里 `topic` 为 `maintenance` / `release` 的条目，再看 `probe` 的
