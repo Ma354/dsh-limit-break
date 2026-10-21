@@ -10,8 +10,13 @@ self-benchmark: two things an agent is normally told it cannot do, made cheap en
 | `resilient_fetch` | Fetch with a four-rung ladder and a report of which rung answered. |
 | `memory_stats` | Where the store is, how many facts, how big. |
 
-Zero dependencies. No import-time side effects. Everything fails soft — a broken store or a dead
+Zero npm dependencies. No import-time side effects. Everything fails soft — a broken store or a dead
 network returns an error object, never an exception that could take the host down.
+
+**Runtime requirement: `curl`.** Rung 1 of the fetch ladder is plain `fetch` and needs nothing; rungs
+2–4 (IPv6 → IPv4 → sibling hostname) shell out to `curl`, so it has to be on `PATH`. Windows 10+,
+macOS and mainstream Linux all ship it. Without it the ladder degrades to rung 1 and says so in the
+report instead of pretending it climbed.
 
 ## Why these four
 
