@@ -110,14 +110,13 @@ git add -A && git commit -m "..." && git push
 
 ## Backlog（按 2026-10-22 20:10 的真实状态）
 
-- [x] **1.5.0 召回排序改进**（2026-10-22）：`memory_recall` 由“子串计数”改为 stopword 过滤 +
-      轻量词干 + 整词/前缀匹配 + dotted id 分段 + idf 加权 + 短语加分；新增
-      `tools/recall-bench.mjs`（20 题），实测 hit@1 **0.75 → 0.95**、MRR **0.867 → 0.975**、hit@3 1.0。
-      四工具 ABI 未变，1.4.0 的“工具集冻结”规则仍然成立。
+- [x] **1.5.0 已上线**（2026-10-22T12:20:22Z）：npm `latest` = `1.5.0`（用户 OTP 发布），GitHub
+      `origin/main` = `cd5f409`（github.com:443 被掐，改用 api.github.com + GraphQL 推送），
+      desktop profile 已从 1.2.1 升到 **1.5.0**，`verify` PASS。四工具 ABI 未变，老会话不会 brick。
 - [ ] 基准里剩下的 miss（“monte carlo pi benchmark on the CPU”）是 `bench.cpu_suite` 与
       `bench.gpu_monte_carlo` 的真实歧义；再往上做要引入上下文/近义词表，性价比低，当作已知上限。
-- [ ] desktop profile 可能钉在旧版本——每次发布后用
-      `dsh.cmd plugin --profile desktop add dsh-limit-break@<version>` 消漂移。
+- [x] desktop profile 版本漂移已消（1.2.1 → 1.5.0）。以后每次发布都跟一条
+      `dsh.cmd plugin --profile desktop add dsh-limit-break@<version>`。
 
 - [x] **1.2.0 已上线**（2026-10-20T12:02:52Z）：npm `latest` = `1.2.0`，GitHub `origin/main` =
       `fd844a4`，`verify` PASS，`test_plugin.mjs` 6/6 PASS。用户 20:04 完成了 OTP 发布和推送。
