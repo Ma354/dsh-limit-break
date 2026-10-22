@@ -108,7 +108,16 @@ git add -A && git commit -m "..." && git push
 
 ---
 
-## Backlog（按 2026-10-20 20:06 的真实状态）
+## Backlog（按 2026-10-22 20:10 的真实状态）
+
+- [x] **1.5.0 召回排序改进**（2026-10-22）：`memory_recall` 由“子串计数”改为 stopword 过滤 +
+      轻量词干 + 整词/前缀匹配 + dotted id 分段 + idf 加权 + 短语加分；新增
+      `tools/recall-bench.mjs`（20 题），实测 hit@1 **0.75 → 0.95**、MRR **0.867 → 0.975**、hit@3 1.0。
+      四工具 ABI 未变，1.4.0 的“工具集冻结”规则仍然成立。
+- [ ] 基准里剩下的 miss（“monte carlo pi benchmark on the CPU”）是 `bench.cpu_suite` 与
+      `bench.gpu_monte_carlo` 的真实歧义；再往上做要引入上下文/近义词表，性价比低，当作已知上限。
+- [ ] desktop profile 可能钉在旧版本——每次发布后用
+      `dsh.cmd plugin --profile desktop add dsh-limit-break@<version>` 消漂移。
 
 - [x] **1.2.0 已上线**（2026-10-20T12:02:52Z）：npm `latest` = `1.2.0`，GitHub `origin/main` =
       `fd844a4`，`verify` PASS，`test_plugin.mjs` 6/6 PASS。用户 20:04 完成了 OTP 发布和推送。
@@ -120,7 +129,8 @@ git add -A && git commit -m "..." && git push
 - [ ] npm 上还挂着占位包 `0.0.0-stage`（`stub: true`）。`npm deprecate` 也要 OTP（本轮 EOTP 失败）；
       用户一条命令即可：`npm deprecate dsh-limit-break@0.0.0-stage "placeholder - use 1.2.0"`。
 - [ ] `1.0.0` 是无元数据的旧包体（author/repository 都不在）。同样一条 `npm deprecate` 可清掉噪音（需 OTP）。
-- [ ] `facts.json` 里 `env.gpu` 仍写着"no GPU compute benchmark was run"——已过时（GPU 实测 54.3×）。
+- [x] `facts.json` 的 `env.gpu` 已改写成“GPU compute throughput is recorded separately in
+      bench.gpu_monte_carlo and bench.render”（2026-10-21 的回写），陈旧描述不再存在。
 - [x] 插件工具对**已经打开的会话**不可见：已在 README「Known limits」第 1 条写明
       （tool list 是 per-session 快照，插件侧修不了）。事实 `harness.plugin-tool-visibility` 有实测。
 - [ ] `resilient_fetch` 目前按"主机名别名"降级，可以继续加：`--resolve` 到已知 IP、

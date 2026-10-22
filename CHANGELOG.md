@@ -5,6 +5,26 @@ All notable changes to `dsh-limit-break`. Format follows
 
 ## Unreleased
 
+## 1.5.0 — 2026-10-22
+
+### Changed
+- **`memory_recall` looks where you point it.** The scorer used raw substring counts over five
+  lowercased blobs, which let common words outvote the one term that identifies a fact ("the",
+  "how", "long"). It now drops English stopwords, stems (`slides`/`slide`, `rendering`/`render`),
+  matches whole words with a prefix fallback (`ray` → `raytracer`), splits dotted ids into segments
+  (`bench.gpu_monte_carlo` → `bench`/`gpu`/`monte`/`carlo`), weights each query token by idf
+  against the live store, and adds a bonus for a whole-phrase hit in the statement.
+- **`tools/recall-bench.mjs`** (new): 20 hand-labelled questions → hit@1, hit@3, MRR, misses
+  printed. Same 20-fact store, before and after: **hit@1 0.75 → 0.95**, MRR **0.867 → 0.975**,
+  hit@3 1.0 → 1.0. The remaining miss ("monte carlo pi benchmark on the CPU") is ambiguous
+  between `bench.cpu_suite` and `bench.gpu_monte_carlo` and ranks second.
+
+### Notes
+- No tool added, removed or renamed: the four-tool ABI is untouched (see 1.4.0). `tokenize`,
+  `scoreFact` and `rankFacts` are newly exported from `lib/index.js` only so the benchmark measures
+  the shipped scorer instead of a copy of it.
+- Store format unchanged; 1.2.x–1.4.0 stores load as-is.
+
 ## 1.4.0 — 2026-10-22
 
 ### Removed

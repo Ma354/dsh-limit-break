@@ -13,6 +13,14 @@ self-benchmark: two things an agent is normally told it cannot do, made cheap en
 Zero npm dependencies. No import-time side effects. Everything fails soft — a broken store or a dead
 network returns an error object, never an exception that could take the host down.
 
+**Recall quality.** `memory_recall` is measured, not vibed: `tools/recall-bench.mjs` runs 20
+hand-labelled questions against the live store and prints hit@1 / hit@3 / MRR. At 1.5.0 the ranking
+skips English stopwords, stems, matches whole words (with a prefix fallback, so `ray` finds
+`raytracer`), splits dotted ids into segments, weights each query token by inverse document
+frequency, and rewards a whole-phrase hit: **hit@1 0.75 → 0.95, MRR 0.867 → 0.975** on the same 20
+questions and the same 20 facts. The one remaining miss is a genuinely ambiguous question that
+matches two benchmark facts.
+
 **Runtime requirement: `curl`.** Rung 1 of the fetch ladder is plain `fetch` and needs nothing; rungs
 2–4 (IPv6 → IPv4 → sibling hostname) shell out to `curl`, so it has to be on `PATH`. Windows 10+,
 macOS and mainstream Linux all ship it. Without it the ladder degrades to rung 1 and says so in the
@@ -87,9 +95,10 @@ Measured, not guessed — each line is something a session actually hit.
   machine is the intended use.
 * **The fetch ladder is hostname-level.** It does not defeat IP-level blocks, TLS interception,
   or a proxy that terminates the connection; it does not skip certificate verification.
-* **`memory_recall` ranks by keyword overlap only** (id/topic/tags/statement), no embeddings, no
-  stemming above the tokenisation in `tokenize()`. A query that shares no token with a fact will
-  miss it.
+* **`memory_recall` ranks by keyword overlap only** (id/topic/tags/statement/details), no
+  embeddings: stopword-filtered, crudely stemmed word matching weighted by idf, so it is good at
+  "which fact did I mean" and bad at paraphrase. `tools/recall-bench.mjs` states the current
+  numbers (hit@1 0.95 on 20 questions); a query that shares no word with a fact still misses it.
 * **`resilient_fetch` reads at most 2 MiB per response** and returns at most 20 000 characters;
   bigger payloads are truncated, not streamed.
 
