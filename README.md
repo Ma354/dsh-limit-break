@@ -1,6 +1,6 @@
 # dsh-limit-break
 
-Five small tools for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) that came out of a
+Four small tools for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) that came out of a
 self-benchmark: two things an agent is normally told it cannot do, made cheap enough to just do.
 
 | Tool | What it does |
@@ -9,7 +9,6 @@ self-benchmark: two things an agent is normally told it cannot do, made cheap en
 | `memory_save` | Write or overwrite one fact: `{ id, statement, value?, unit?, details?, tags?, source? }`. |
 | `resilient_fetch` | Fetch with a four-rung ladder and a report of which rung answered. |
 | `memory_stats` | Where the store is, how many facts, how big. |
-| `memory_prune` | Finds redundant facts (session state, exact duplicates) and archives them. Dry run unless `apply: true`; nothing is ever deleted. |
 
 Zero npm dependencies. No import-time side effects. Everything fails soft — a broken store or a dead
 network returns an error object, never an exception that could take the host down.
@@ -19,21 +18,12 @@ network returns an error object, never an exception that could take the host dow
 macOS and mainstream Linux all ship it. Without it the ladder degrades to rung 1 and says so in the
 report instead of pretending it climbed.
 
-## Why these five
+## Why these four
 
 **Memory.** A session starts from zero. A store on disk plus a read at the start is enough to beat
 that. Measured with two brand-new agents, zero context, the same five questions: **5/5 with the
 store, 0/5 without** — and the control did not hallucinate, it answered "I don't have that" five
 times.
-
-**Redundancy.** A store's slow failure mode is drift: two facts restating one measurement, or a
-fact that is really session state, until a recall returns two slightly different answers. Cleaning
-it by hand works once; `memory_prune` makes it repeatable. The two safe rules — *session state* and
-*exact duplicates* — are deterministic, reported as a plan first, and applied only on
-`apply: true`, with the pre-prune store copied to `facts.json.bak-<timestamp>` and the dropped
-facts moved to `facts.archive.json`. Nothing is deleted. Soft suspicions (facts citing the same
-measurements, facts that contradict each other on one topic) come back as read-only warnings,
-because those need a human decision.
 
 **Network.** The reflex "this host is unreachable" is wrong more often than it is right. Measured on
 one network, same edge IP, 75 seconds apart: `api.wikimedia.org` → 200 in 0.43 s,
@@ -78,9 +68,6 @@ package the profile does not declare is silently ignored.
 
 Plain JSON on purpose: anything that can read a file can use it, with or without this plugin.
 Writes are tmp-file + rename.
-
-`memory_prune` keeps the same contract: a plan first, a `facts.json.bak-<timestamp>` copy before
-any write, and the removed facts kept in `facts.archive.json` next to the store.
 
 ## Disable / remove
 

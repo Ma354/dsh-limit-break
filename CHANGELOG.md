@@ -5,6 +5,23 @@ All notable changes to `dsh-limit-break`. Format follows
 
 ## Unreleased
 
+## 1.4.0 — 2026-10-22
+
+### Removed
+- **`memory_prune` is gone.** Added in 1.3.0 and removed 18 hours later, because adding a tool
+  to a running plugin **bricks existing sessions**: DSH projects the new tool as a
+  `tool_addition` block when an old session resumes, and the API rejects the whole turn
+  (`messages.196: tool_addition blocks can only be in system messages`). Two sessions died
+  that way. The pruner logic was sound; the delivery was not. A plugin's tool set is part of
+  the session ABI, not an implementation detail.
+- `tools/prune-selftest.mjs` removed with the tool; `writeJsonAtomic` was only used by the
+  pruner and went with it.
+
+### Rules adopted
+- The four tools are **frozen for the 1.x line**. No new tool, no removal: both change the
+  tool set that old sessions were created under.
+- Nothing is lost by removing the pruner: the store schema is unchanged, `facts.archive.json`
+  stays valid, and 1.2.x / 1.3.0 stores load as-is.
 ## 1.3.0 — 2026-10-22
 
 ### Added
