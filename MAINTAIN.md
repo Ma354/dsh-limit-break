@@ -123,8 +123,14 @@ git add -A && git commit -m "..." && git push
       `env.node_npm` 与 `release.dsh-limit-break` 两条事实已回写。
 - [x] 旧定时任务 `schedule-803cdbdc`（会话 5133bee1）已由用户在面板删除；`storages/schedule.json`
       里只剩 `schedule-0b6c60ea`（hello world）和新的 `schedule-b3675d28`。无需再处理。
-- [ ] 市场条目 PR `awesome-dsh-plugin/awesome-dsh-plugin#8296` 仍是 open；合并前 `status` 会一直报
-      `market listing not live yet`。找合并节奏，不要重提。
+- [x] 市场条目**已合并上线**（2026-10-22 之后）：`awesome-dsh-plugin/awesome-dsh-plugin#8296`
+      merged，条目文件 `data/plugins/Ma354__dsh-limit-break.yml`（category: memory）；
+      2026-10-27 01:06 的 `#9282`（加 storefront icon，`assets/icon-180.png`）也已 merged。
+      `maintain.py status` 现在 `listed_in_market: true`、`problems: []`。不要再提新 PR。
+- [ ] 本地仓库落后远端：本地 `94eafb7`，远端 `b84161a`（用户 10-25 推了 icon 等）；
+      `github.com:443` 被掐，`git fetch` 连试 3 次全失败。等网络恢复后跑
+      `git fetch origin && git reset --hard origin/main`。在此之前文档改动走
+      `..\_maintain\ghpush.mjs`（GraphQL，按远端 head 建提交，内容全量替换，不受分叉影响）。
 - [ ] npm 上还挂着占位包 `0.0.0-stage`（`stub: true`）。`npm deprecate` 也要 OTP（本轮 EOTP 失败）；
       用户一条命令即可：`npm deprecate dsh-limit-break@0.0.0-stage "placeholder - use 1.2.0"`。
 - [ ] `1.0.0` 是无元数据的旧包体（author/repository 都不在）。同样一条 `npm deprecate` 可清掉噪音（需 OTP）。
