@@ -75,7 +75,10 @@ package the profile does not declare is silently ignored.
 ```
 
 Plain JSON on purpose: anything that can read a file can use it, with or without this plugin.
-Writes are tmp-file + rename.
+Writes are tmp-file + rename, and a save takes a `.facts.lock` (created `O_EXCL`, stolen after
+15 s if its writer died) around the whole read-modify-write, so two sessions saving at the same
+moment both keep their facts. `tools/concurrency-selftest.mjs` states the numbers: 16–17 of 48
+saves lost before the lock, 0 after.
 
 ## Disable / remove
 
@@ -90,9 +93,10 @@ Measured, not guessed — each line is something a session actually hit.
 * **Tools are visible only to sessions opened after the mount.** A session created before the
   plugin mounted keeps its tool snapshot; new tools do not appear until a new session. Not fixable
   from the plugin side (the tool list is materialised per session).
-* **One writer per store.** Writes are tmp-file + rename, which is crash-safe, but two processes
-  writing `facts.json` concurrently still lose one update — there is no lock. One agent per
-  machine is the intended use.
+* **Concurrent saves serialise, and wait at most 8 s.** A second session saving at the same moment
+  waits for the lock instead of losing its fact; if the holder is wedged, the save returns
+  `{ ok: false, code: "memory.locked" }` rather than hanging. Read paths take no lock, so a save
+  still cannot stop a reader from seeing the previous snapshot.
 * **The fetch ladder is hostname-level.** It does not defeat IP-level blocks, TLS interception,
   or a proxy that terminates the connection; it does not skip certificate verification.
 * **`memory_recall` ranks by keyword overlap only** (id/topic/tags/statement/details), no

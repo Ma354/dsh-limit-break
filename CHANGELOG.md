@@ -5,6 +5,27 @@ All notable changes to `dsh-limit-break`. Format follows
 
 ## Unreleased
 
+## 1.6.0 — 2026-10-29
+
+### Fixed
+- **`memory_save` no longer loses writes when two sessions save at the same time.** Saving was
+  load → mutate → write-temp → rename with nothing serialising it, so concurrent writers each
+  wrote a store missing the other's fact, and on Windows the losing `rename` often failed outright
+  with `EPERM`. Saves now take a lock file created with `O_EXCL` around the whole read-modify-write,
+  released in a `finally`; a lock left behind by a dead process is stolen after 15 s, and a writer
+  that cannot get in within 8 s returns `{ ok: false, code: 'memory.locked' }` instead of throwing.
+  A failed `stat` is never read as "stale" — that is exactly how two writers end up inside at once.
+- **`tools/concurrency-selftest.mjs`** (new): spawns N worker processes that each save M facts,
+  reads the store back, and counts what survived; it also checks stale-lock recovery.
+  8 workers × 6 saves × 3 rounds on the same machine: **16–17 of 48 saves lost** and **up to 25 of
+  48 saves failed with `EPERM`** before; **0 lost, 0 failed** after (also clean at 12 × 5 × 4 = 240
+  saves, and a 60 s-old lock is recovered with 6/6 saves kept).
+
+### Notes
+- No tool added, removed or renamed: the four-tool ABI is untouched. Store format unchanged, and
+  single-writer behaviour is identical (the lock is uncontended: one `open` + one `rm` per save).
+- Read paths (`memory_recall`, `memory_stats`) do not take the lock.
+
 ## 1.5.0 — 2026-10-22
 
 ### Changed

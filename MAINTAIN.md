@@ -140,4 +140,7 @@ git add -A && git commit -m "..." && git push
       （tool list 是 per-session 快照，插件侧修不了）。事实 `harness.plugin-tool-visibility` 有实测。
 - [ ] `resilient_fetch` 目前按"主机名别名"降级，可以继续加：`--resolve` 到已知 IP、
       IPv6 优先、以及把成功路径写回记忆库（现在是只读阶梯）。
-- [ ] 没有任何自动化测试覆盖 `memory_save` 的并发写。单进程够用，多进程未验证。
+- [x] **`memory_save` 的并发写已有自动化覆盖**（1.6.0，2026-10-29）：`tools/concurrency-selftest.mjs`
+      起 N 个独立进程同时写同一个 store，再读回数存活条数，另测“陈旧锁被接管”。同机 8 进程 × 6 次 × 3 轮：
+      修复前丢 16–17/48、且最多 25/48 直接 `EPERM`（rename 输家）；加 `O_EXCL` 锁后 0 丢 0 失败，
+      12 × 5 × 4 = 240 次同样全存活。改了 `memory_save` 的写入路径就跑一遍它（约 20 s）。
