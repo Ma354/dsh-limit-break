@@ -5,6 +5,29 @@ All notable changes to `dsh-limit-break`. Format follows
 
 ## Unreleased
 
+## 1.7.0 — 2026-11-05
+
+### Changed
+- **`resilient_fetch` remembers which rung worked instead of rediscovering it on every call.** A
+  non-direct success is written back as `network.route.<host>` (14-day TTL, written under the same
+  lock as `memory_save`) and the next call to that host starts at that rung; if a plain fetch starts
+  working again the route is deleted, so an unblocked host heals itself. Measured on
+  `en.wikipedia.org/wiki/Monte_Carlo_method` with the default 12 s per-rung timeout: cold **12.11 s**
+  with attempts `direct>alternate-host`, warm **1.08 s / 1.14 s** with a single `alternate-host`
+  attempt — **11.2× faster**; the tool now also reports `millis`, `route`
+  (`learned|reused|dropped|none`) and `cached_via`.
+- **`tools/fetch-route-bench.mjs`** (new): cold-vs-warm measurement for one blocked host plus a
+  self-heal check (a seeded stale route must be dropped once direct works). 6/6 checks PASS.
+- Route facts are ordinary facts: visible to `memory_recall`/`memory_stats`, removable with any
+  store edit. Only fallback successes and self-heal events write, so a working network writes nothing.
+
+### Notes
+- No tool added, removed or renamed; store format unchanged. The tool description text now mentions
+  the remembered route, which an already-open session will not see until its tool snapshot refreshes.
+- `maintain.py status` still prints `market listing not live yet (PR #8296 closed)` while the same
+  call reports `listed_in_market: true`: the check treats a merged-and-closed PR as not live. Left
+  as-is, documented in MAINTAIN.md so the next round does not read it as a regression.
+
 ## 1.6.0 — 2026-10-29
 
 ### Fixed

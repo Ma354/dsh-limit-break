@@ -138,8 +138,14 @@ git add -A && git commit -m "..." && git push
       bench.gpu_monte_carlo and bench.render”（2026-10-21 的回写），陈旧描述不再存在。
 - [x] 插件工具对**已经打开的会话**不可见：已在 README「Known limits」第 1 条写明
       （tool list 是 per-session 快照，插件侧修不了）。事实 `harness.plugin-tool-visibility` 有实测。
-- [ ] `resilient_fetch` 目前按"主机名别名"降级，可以继续加：`--resolve` 到已知 IP、
-      IPv6 优先、以及把成功路径写回记忆库（现在是只读阶梯）。
+- [x] **`resilient_fetch` 会把成功路径写回记忆库**（1.7.0，2026-11-05）：非 direct 成功写成
+      `network.route.<host>`（14 天 TTL，走 `memory_save` 同一把锁），下次同主机直接从该级起步；
+      direct 恢复后删掉路由（自愈）。实测 `en.wikipedia.org/wiki/Monte_Carlo_method`、12 s 超时：
+      cold 12.11 s（`direct>alternate-host`）→ warm 1.08 s / 1.14 s（单次 `alternate-host`），11.2×。
+      跑 `node tools/fetch-route-bench.mjs <url> <timeoutMs>` 复测（约 15 s，6 项检查）。
+      仍可继续加：`--resolve` 到已知 IP、IPv6 优先（backlog）。
+- [ ] `maintain.py status` 的 `problems` 里 `market listing not live yet (PR #8296 closed)` 是误报：
+      同一份输出里 `listed_in_market: true`。原因未查，先记为已知噪音，别当成回归。
 - [x] **`memory_save` 的并发写已有自动化覆盖**（1.6.0，2026-10-29）：`tools/concurrency-selftest.mjs`
       起 N 个独立进程同时写同一个 store，再读回数存活条数，另测“陈旧锁被接管”。同机 8 进程 × 6 次 × 3 轮：
       修复前丢 16–17/48、且最多 25/48 直接 `EPERM`（rename 输家）；加 `O_EXCL` 锁后 0 丢 0 失败，

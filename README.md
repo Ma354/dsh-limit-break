@@ -43,6 +43,12 @@ IPv6 → IPv4 → a **sibling hostname of the same service** whose certificate s
 It does **not** disable certificate verification and does not route through a proxy that would
 impersonate the origin. Those are MITM, not workarounds.
 
+**The ladder learns.** A fallback rung that worked is written back as `network.route.<host>` and the
+next call to that host starts there; if a plain fetch starts working again the route is deleted (host
+self-heals). Measured on `en.wikipedia.org/wiki/Monte_Carlo_method`, 12 s per-rung timeout: cold
+**12.1 s** (rung 1 burned the timeout, rung 4 answered) → warm **1.08 s / 1.14 s**, one attempt
+instead of two — **11.2× faster**. Numbers come from `tools/fetch-route-bench.mjs`.
+
 ## Install
 
 ```sh
@@ -99,6 +105,9 @@ Measured, not guessed — each line is something a session actually hit.
   still cannot stop a reader from seeing the previous snapshot.
 * **The fetch ladder is hostname-level.** It does not defeat IP-level blocks, TLS interception,
   or a proxy that terminates the connection; it does not skip certificate verification.
+* **A remembered route is a bet with a 14-day expiry.** The ladder trusts `network.route.<host>` for
+  two weeks and drops it as soon as a direct request works; if the winning rung starts failing the
+  call still walks the rest of the ladder, it just pays that one rung first.
 * **`memory_recall` ranks by keyword overlap only** (id/topic/tags/statement/details), no
   embeddings: stopword-filtered, crudely stemmed word matching weighted by idf, so it is good at
   "which fact did I mean" and bad at paraphrase. `tools/recall-bench.mjs` states the current
