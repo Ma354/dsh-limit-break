@@ -5,7 +5,15 @@ All notable changes to `dsh-limit-break`. Format follows
 
 ## Unreleased
 
-## 1.8.0 — 2026-11-12
+## 1.8.1 — 2026-11-12
+
+### Fixed
+- **Republish of the 1.8.0 change set.** `1.8.0` reached the npm registry as metadata only — its
+  tarball (`dsh-limit-break-1.8.0.tgz`) returns 404 on every endpoint, so it cannot be installed.
+  The code, tests and measurements are identical; `1.8.1` is the first installable build of the
+  fetch-failure memory.
+
+## 1.8.0 — 2026-11-12 (not installable from npm; superseded by 1.8.1)
 
 ### Changed
 - **`resilient_fetch` remembers hard failures instead of re-walking the dead ladder.** A URL whose
