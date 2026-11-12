@@ -5,6 +5,27 @@ All notable changes to `dsh-limit-break`. Format follows
 
 ## Unreleased
 
+## 1.8.0 — 2026-11-12
+
+### Changed
+- **`resilient_fetch` remembers hard failures instead of re-walking the dead ladder.** A URL whose
+  every rung failed is cached for ten minutes: the retry returns the recorded failure immediately
+  (`cached: true`, `ageMs`, `retryAfterMs`) instead of paying one timeout per rung again. Measured on
+  `en.wikipedia.org/robots.txt` (no alternate hostname applies) with the default 12 s per-rung
+  timeout: cold **34.81 s**, 3 attempts → retry **0.01 s** — **3481× faster**; at 3 s per rung,
+  13.26 s → 0.02 s.
+- Failure entries live in `fetch-failures.json` next to the store, **not** in `facts.json`: a
+  transient network blip is not durable knowledge and would pollute `memory_recall`. Reads are
+  lock-free, writes take the same lock as `memory_save`, expired entries are pruned on write.
+- Only *hard* failures are remembered (elapsed > 2 s, or a timeout/reset/DNS-class error): a fast
+  404/403 says nothing about the network, so it is never cached. A different path on the same host
+  still gets a real attempt, and a successful call deletes that URL's entry.
+- `resilient_fetch` also returns `millis` on failure, and the failed-attempt rendering shows cached
+  age and retry window.
+- **`tools/fetch-fail-bench.mjs`** (new): cold vs cached retry, over-blocking check (different path),
+  TTL-expiry check, and two healing checks (expired entry must not block a live URL; success must
+  delete the entry). 10/10 checks PASS.
+
 ## 1.7.0 — 2026-11-05
 
 ### Changed

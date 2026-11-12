@@ -144,6 +144,12 @@ git add -A && git commit -m "..." && git push
       cold 12.11 s（`direct>alternate-host`）→ warm 1.08 s / 1.14 s（单次 `alternate-host`），11.2×。
       跑 `node tools/fetch-route-bench.mjs <url> <timeoutMs>` 复测（约 15 s，6 项检查）。
       仍可继续加：`--resolve` 到已知 IP、IPv6 优先（backlog）。
+- [x] **`resilient_fetch` 的“三级全失败”每次重撞一遍**（1.8.0，2026-11-12）：同 URL 硬失败记
+      `fetch-failures.json`（10 分钟 TTL、走同一把锁、只记耗时 >2 s 或 timeout/reset 类失败），
+      重试直接返回缓存。实测 `en.wikipedia.org/robots.txt`、默认 12 s/级：cold 34.81 s（3 次尝试）
+      → 重试 0.01 s（`retryAfterMs` 给出剩余时间），3481×。跑
+      `node tools/fetch-fail-bench.mjs <url>` 复测（约 40 s，10 项检查）。
+      仍可继续加：失败计数退避（第 2 次 10 分钟、第 3 次 1 小时）、`--resolve` 到已知 IP、IPv6 优先。
 - [ ] `maintain.py status` 的 `problems` 里 `market listing not live yet (PR #8296 closed)` 是误报：
       同一份输出里 `listed_in_market: true`。原因未查，先记为已知噪音，别当成回归。
 - [x] **`memory_save` 的并发写已有自动化覆盖**（1.6.0，2026-10-29）：`tools/concurrency-selftest.mjs`

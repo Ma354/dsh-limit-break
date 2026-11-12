@@ -49,6 +49,15 @@ self-heals). Measured on `en.wikipedia.org/wiki/Monte_Carlo_method`, 12 s per-ru
 **12.1 s** (rung 1 burned the timeout, rung 4 answered) → warm **1.08 s / 1.14 s**, one attempt
 instead of two — **11.2× faster**. Numbers come from `tools/fetch-route-bench.mjs`.
 
+**The ladder remembers failures too.** A URL whose every rung died is not retried for ten minutes: the
+same call returns the recorded failure in milliseconds instead of burning another timeout per rung.
+Measured on `en.wikipedia.org/robots.txt` (no alternate hostname applies there), default 12 s per
+rung: cold **34.81 s** (3 dead rungs) → retry **0.01 s** (cached, `retryAfterMs` tells you when) —
+**3481× faster**. Only *slow* failures are remembered (a fast 404/403 is not a network verdict), the
+entry lives in a sidecar next to the store rather than `facts.json` (a transient blip is not durable
+knowledge), a different path on the same host still gets a real attempt, and the entry is deleted as
+soon as the URL answers. Numbers come from `tools/fetch-fail-bench.mjs`.
+
 ## Install
 
 ```sh
@@ -108,6 +117,10 @@ Measured, not guessed — each line is something a session actually hit.
 * **A remembered route is a bet with a 14-day expiry.** The ladder trusts `network.route.<host>` for
   two weeks and drops it as soon as a direct request works; if the winning rung starts failing the
   call still walks the rest of the ladder, it just pays that one rung first.
+* **A remembered failure blinds that one URL for ten minutes.** If a host recovers faster than that,
+  the exact URL still reports the cached failure (with `retryAfterMs`) until the entry expires — the
+  deliberate trade for not paying ~35 s on every retry of a dead URL. A different path on the same
+  host, or a different host, is still attempted normally.
 * **`memory_recall` ranks by keyword overlap only** (id/topic/tags/statement/details), no
   embeddings: stopword-filtered, crudely stemmed word matching weighted by idf, so it is good at
   "which fact did I mean" and bad at paraphrase. `tools/recall-bench.mjs` states the current
