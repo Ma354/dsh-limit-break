@@ -113,8 +113,14 @@ git add -A && git commit -m "..." && git push
 - [x] **1.5.0 已上线**（2026-10-22T12:20:22Z）：npm `latest` = `1.5.0`（用户 OTP 发布），GitHub
       `origin/main` = `cd5f409`（github.com:443 被掐，改用 api.github.com + GraphQL 推送），
       desktop profile 已从 1.2.1 升到 **1.5.0**，`verify` PASS。四工具 ABI 未变，老会话不会 brick。
-- [ ] 基准里剩下的 miss（“monte carlo pi benchmark on the CPU”）是 `bench.cpu_suite` 与
-      `bench.gpu_monte_carlo` 的真实歧义；再往上做要引入上下文/近义词表，性价比低，当作已知上限。
+- [x] **1.9.0 修掉了基准里剩下的两个 miss**：`env.dsh_renderer_spinner_cpu` 曾压过 `env.cpu`、
+      `bench.gpu_monte_carlo` 曾压过 `bench.cpu_suite`，根因是 id 命中不分长短；现在按
+      `1/sqrt(id segments)` 归一。第三个 miss（`why was memory_prune removed`）根本不是排序问题，
+      而是那条知识被埋进了 `tool.limit_break_plugin` 的长句里——已拆成独立事实 `tool.memory_prune`。
+      38 条 store 上：hit@1 0.85 → 1.00、MRR 0.900 → 1.000（20 题）。
+- [ ] 基准只有**词面重叠**这一个信号：今天新写的 9 题 held-out 在改动前后都是 9/9，说明没退化，
+      但不证明泛化。下一步值得做的是攒一份“换个说法问同一件事”的 paraphrase 集（不回用原词），
+      先量出真实下限再决定要不要引入近义词表/向量检索。别为了盯 bench 数字调参。
 - [x] desktop profile 版本漂移已消（1.2.1 → 1.5.0）。以后每次发布都跟一条
       `dsh.cmd plugin --profile desktop add dsh-limit-break@<version>`。
 

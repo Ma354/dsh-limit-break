@@ -14,12 +14,20 @@ Zero npm dependencies. No import-time side effects. Everything fails soft — a 
 network returns an error object, never an exception that could take the host down.
 
 **Recall quality.** `memory_recall` is measured, not vibed: `tools/recall-bench.mjs` runs 20
-hand-labelled questions against the live store and prints hit@1 / hit@3 / MRR. At 1.5.0 the ranking
-skips English stopwords, stems, matches whole words (with a prefix fallback, so `ray` finds
+hand-labelled questions against the live store and prints hit@1 / hit@3 / MRR, next to a nine-question
+held-out set that was written *after* the ranking change and never used to pick it. At 1.5.0 the
+ranking skips English stopwords, stems, matches whole words (with a prefix fallback, so `ray` finds
 `raytracer`), splits dotted ids into segments, weights each query token by inverse document
-frequency, and rewards a whole-phrase hit: **hit@1 0.75 → 0.95, MRR 0.867 → 0.975** on the same 20
-questions and the same 20 facts. The one remaining miss is a genuinely ambiguous question that
-matches two benchmark facts.
+frequency, and rewards a whole-phrase hit. At 1.9.0 the store had grown from 20 to 38 facts and
+hit@1 had slipped to 0.85: a *long* id was winning ties, because every id segment scored the same —
+`env.dsh_renderer_spinner_cpu` beat `env.cpu` for "which CPU is in this machine" and
+`bench.gpu_monte_carlo` beat `bench.cpu_suite` for "monte carlo pi benchmark on the CPU". Id hits are
+now scaled by `1/sqrt(id segments)`, so `env.cpu` (2 segments) counts for more than a four-segment id
+that merely contains `cpu`; square-root rather than full normalisation, because dividing by the id
+length over-punished legitimate three-segment ids such as `bench.cpu_suite`. **hit@1 0.85 → 1.00,
+hit@3 0.95 → 1.00, MRR 0.900 → 1.000** on the 20 tuned questions; the held-out nine scored 9/9 both
+before and after, so that is evidence of no regression, not proof of generalisation. Treat the numbers
+as this store's, not as a promise about yours.
 
 **Runtime requirement: `curl`.** Rung 1 of the fetch ladder is plain `fetch` and needs nothing; rungs
 2–4 (IPv6 → IPv4 → sibling hostname) shell out to `curl`, so it has to be on `PATH`. Windows 10+,
@@ -124,7 +132,9 @@ Measured, not guessed — each line is something a session actually hit.
 * **`memory_recall` ranks by keyword overlap only** (id/topic/tags/statement/details), no
   embeddings: stopword-filtered, crudely stemmed word matching weighted by idf, so it is good at
   "which fact did I mean" and bad at paraphrase. `tools/recall-bench.mjs` states the current
-  numbers (hit@1 0.95 on 20 questions); a query that shares no word with a fact still misses it.
+  numbers (hit@1 1.00 on the 20 tuned questions of a 38-fact store, 9/9 on a held-out set); a query
+  that shares no word with a fact still misses it, and nothing here handles paraphrases the words do
+  not cover.
 * **`resilient_fetch` reads at most 2 MiB per response** and returns at most 20 000 characters;
   bigger payloads are truncated, not streamed.
 

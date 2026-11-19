@@ -36,37 +36,64 @@ const CASES = [
   ['what renders the film with numpy', 'film.wotaiyang']
 ]
 
+/**
+ * Held-out set: written after the 1.9.0 ranking change and never used to pick it, so
+ * the two numbers answer different questions — CASES tracks regressions on tuned
+ * phrases, HOLDOUT says whether freshly worded questions find their fact.
+ */
+const HOLDOUT = [
+  ['what GPU does this laptop have', 'env.gpu'],
+  ['what happens if I edit config live with HMR', 'dsh.hmr_live_config_edit'],
+  ['why do cookies get 431 errors in the desktop app', 'dsh.cookie_431_rootfix'],
+  ['how does the film use raymarching in numpy', 'film.wotaiyang'],
+  ['what is the route cache TTL', 'plugin.fetch_route_cache'],
+  ['can the browser post to github', 'env.browser.github_posting'],
+  ['what does the weekly maintenance schedule do', 'task.limit-break.maintenance'],
+  ['how many samples per second did the GPU do', 'bench.gpu_monte_carlo'],
+  ['what did the disk cleanup free', 'env.disk_cleanup_20261029']
+]
+
 const raw = JSON.parse(await readFile(STORE, 'utf8'))
 const facts = (raw.facts || []).filter(Boolean)
 
-let hit1 = 0
-let hit3 = 0
-let rr = 0
-const misses = []
-for (const [query, want] of CASES) {
-  const ranked = rankFacts(facts, query).map((row) => row.fact.id)
-  const at = ranked.indexOf(want)
-  if (at === 0) hit1 += 1
-  if (at >= 0 && at < 3) hit3 += 1
-  if (at >= 0) rr += 1 / (at + 1)
-  if (at !== 0) misses.push({ query, want, at: at < 0 ? 'miss' : at + 1, top: ranked.slice(0, 3) })
+function evaluate(cases) {
+  let hit1 = 0
+  let hit3 = 0
+  let rr = 0
+  const misses = []
+  for (const [query, want] of cases) {
+    const ranked = rankFacts(facts, query).map((row) => row.fact.id)
+    const at = ranked.indexOf(want)
+    if (at === 0) hit1 += 1
+    if (at >= 0 && at < 3) hit3 += 1
+    if (at >= 0) rr += 1 / (at + 1)
+    if (at !== 0) misses.push({ query, want, at: at < 0 ? 'miss' : at + 1, top: ranked.slice(0, 3) })
+  }
+  return {
+    cases: cases.length,
+    hit_at_1: +(hit1 / cases.length).toFixed(3),
+    hit_at_3: +(hit3 / cases.length).toFixed(3),
+    mrr: +(rr / cases.length).toFixed(3),
+    misses
+  }
 }
 
 const report = {
   store: STORE,
   facts: facts.length,
-  cases: CASES.length,
-  hit_at_1: +(hit1 / CASES.length).toFixed(3),
-  hit_at_3: +(hit3 / CASES.length).toFixed(3),
-  mrr: +(rr / CASES.length).toFixed(3),
-  misses
+  tuned: evaluate(CASES),
+  holdout: evaluate(HOLDOUT)
 }
 
 if (process.argv.includes('--json')) {
   console.log(JSON.stringify(report, null, 2))
 } else {
-  console.log(`facts=${report.facts} cases=${report.cases} hit@1=${report.hit_at_1} hit@3=${report.hit_at_3} mrr=${report.mrr}`)
-  for (const miss of report.misses) {
-    console.log(`  miss: "${miss.query}" wanted ${miss.want} got rank ${miss.at} -> ${miss.top.join(', ')}`)
+  console.log(`facts=${report.facts}`)
+  for (const part of ['tuned', 'holdout']) {
+    const r = report[part]
+    console.log(`${part}: cases=${r.cases} hit@1=${r.hit_at_1} hit@3=${r.hit_at_3} mrr=${r.mrr}`)
+    for (const miss of r.misses) {
+      console.log(`  miss: "${miss.query}" wanted ${miss.want} got rank ${miss.at} -> ${miss.top.join(', ')}`)
+    }
   }
 }

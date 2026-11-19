@@ -3,6 +3,25 @@
 All notable changes to `dsh-limit-break`. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versions follow semver.
 
+## 1.9.0 — 2026-11-19
+
+### Fixed
+- **A long id no longer outranks a short one for the same word.** Every id segment used to score the
+  full id weight, so a qualifier-heavy id beat the fact that names the thing: with the store at 38
+  facts, `env.dsh_renderer_spinner_cpu` won "which CPU is in this machine" over `env.cpu`, and
+  `bench.gpu_monte_carlo` won "monte carlo pi benchmark on the CPU" over `bench.cpu_suite`. An id hit
+  is now scaled by `1/sqrt(id segments)`. Full normalisation (1/length) was tried and rejected: it
+  over-punished legitimate three-segment ids and pushed "what is the DSH home directory" down to rank
+  5. Measured with `node tools/recall-bench.mjs`: **hit@1 0.85 → 0.95, MRR 0.900 → 0.950** from the
+  scoring change alone.
+- **`tool.memory_prune` is its own fact again.** The "why was memory_prune withdrawn" history was
+  buried inside the long `tool.limit_break_plugin` fact, which no query about the removal could rank
+  first; splitting it out (and pointing the tool fact at it) took the benchmark from 0.95 to **hit@1
+  1.00 / hit@3 1.00 / MRR 1.000** on the 20 tuned questions.
+- **The benchmark now reports a held-out set.** Nine questions written after the change, never used
+  to pick it, run alongside the tuned twenty so a regression shows up and blind tuning does not look
+  like progress: **9/9 both before and after** this round.
+
 ## Unreleased
 
 ## 1.8.1 — 2026-11-12
